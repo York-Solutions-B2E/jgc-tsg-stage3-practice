@@ -1,13 +1,13 @@
-package com.jgc.rediskafka;
+package com.jgc.tsg3macroservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class RediskafkaApplication {
+public class Tsg3macroserviceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(RediskafkaApplication.class, args);
+		SpringApplication.run(Tsg3macroserviceApplication.class, args);
 	}
 
 }
