@@ -1,0 +1,79 @@
+services:
+  maven:
+    image: maven:3.9.11-amazoncorretto-25
+    container_name: tsg3_springboot
+    working_dir: /app
+    command: "./mvnw clean package spring-boot:run"
+    depends_on:
+      kafka:
+        condition: service_healthy
+#      redis:
+#        condition: service_started
+      postgresql:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../tsg3macroservice:/app
+      - ~/.m2:/root/.m2
+    
+#  redis:
+#    image: redis:latest
+#    container_name: tsg3_redis
+#    restart: unless-stopped
+#    depends_on:
+#      kafka:
+#        condition: service_healthy
+#    ports:
+#      - "6379:6379"
+#    environment:
+#      - REDIS_PASSWORD=password
+#    volumes:
+#      - redisdata:/var/lib/redis
+
+  postgresql:
+    image: postgres:latest
+    container_name: tsg3_postgresql
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DATABASE=tsg3_db
+    volumes:
+      - postgresdata:/var/lib/postgresql
+
+  kafka: # Thank you, Mitch
+    image: confluentinc/confluent-local:latest
+    container_name: tsg3_kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_PROCESS_ROLES: "broker,controller"        # Run both the broker and controller in the same node
+      KAFKA_NODE_ID: 1                                 # Unique node ID for this broker/controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"  # Define the KRaft quorum (single-node for dev)
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093" # Expose broker + controller listeners
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092" # How clients on the host reach Kafka
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_DIRS: "/tmp/kraft-combined-logs"
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+    healthcheck:
+      test:
+        ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 3s
+      timeout: 10s
+      retries: 30
+
+volumes:
+  postgresdata:
+#  redisdata:
+      
+networks:
+  default:
+    driver: bridge
