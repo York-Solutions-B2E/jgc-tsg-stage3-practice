@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   maven:
     image: maven:3.9.11-amazoncorretto-25
@@ -7,29 +8,15 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-#      redis:
-#        condition: service_started
       postgresql:
-        condition: service_started
+        condition: service_healthy
     ports:
       - "8080:8080"
     volumes:
       - ../tsg3macroservice:/app
       - ~/.m2:/root/.m2
-    
-#  redis:
-#    image: redis:latest
-#    container_name: tsg3_redis
-#    restart: unless-stopped
-#    depends_on:
-#      kafka:
-#        condition: service_healthy
-#    ports:
-#      - "6379:6379"
-#    environment:
-#      - REDIS_PASSWORD=password
-#    volumes:
-#      - redisdata:/var/lib/redis
+    networks:
+      - tsgnet
 
   postgresql:
     image: postgres:latest
@@ -37,15 +24,23 @@ services:
     restart: unless-stopped
     depends_on:
       kafka:
-        condition: service_healthy
+        condition: service_started
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_USERNAME=postgres
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DATABASE=tsg3_db
+      - POSTGRES_DB=tsg3_db
     volumes:
       - postgresdata:/var/lib/postgresql
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U postgres -d tsg3_db"]
+      interval: 3s
+      timeout: 10s
+      retries: 30
+    networks:
+      - tsgnet
 
   kafka: # Thank you, Mitch
     image: confluentinc/confluent-local:latest
@@ -66,14 +61,15 @@ services:
     healthcheck:
       test:
         ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
-      interval: 3s
+      interval: 60s
       timeout: 10s
-      retries: 30
+      retries: 10
+    networks:
+      - tsgnet
 
 volumes:
   postgresdata:
-#  redisdata:
       
 networks:
-  default:
+  tsgnet:
     driver: bridge

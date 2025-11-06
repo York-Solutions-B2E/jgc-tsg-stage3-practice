@@ -2,18 +2,21 @@ spring:
   application:
     name: tsg3macroservice
   kafka:
-    bootstrap-servers: "localhost:9092"
+    bootstrap-servers: "kafka:9092"
     consumer:
       group-id: "my-group"
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
   datasource:
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
-    url: jdbc:postgresql://localhost:5432/${POSTGRES_DATABASE}
+    username: postgres
+    password: password
+    url: "jdbc:postgresql://postgresql:5432/tsg3_db"
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate.ddl-auto: update
@@ -21,3 +24,11 @@ spring:
     properties:
       hibernate:
         jdbc.time_zone: UTC
+event:
+  topic:
+    name: "TEST_TOPIC"
+logging:
+  level:
+    org.springframework.kafka: DEBUG
+    org.apache.kafka: DEBUG
+        

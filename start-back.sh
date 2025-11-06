@@ -44,4 +44,7 @@ tsgdbdir="$scriptdir/db"
 # Go into the database directory
 cd $tsgdbdir
 # Start the database
-docker compose up
+if [ -f log.log ]; then
+    rm log.log
+fi
+docker compose up > >(tee -a log.log) 2>&1
