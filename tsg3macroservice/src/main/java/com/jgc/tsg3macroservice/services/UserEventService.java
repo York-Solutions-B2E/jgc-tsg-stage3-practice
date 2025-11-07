@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserEventService {
 
-    private final KafkaTemplate<String, UserEvent> kafkaTemplate;
+    private KafkaTemplate<String, UserEvent> kafkaTemplate;
     
     @Value("${event.topic.name}")
     private String topicName;

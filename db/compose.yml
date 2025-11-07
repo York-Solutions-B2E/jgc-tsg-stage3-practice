@@ -25,8 +25,6 @@ services:
     depends_on:
       kafka:
         condition: service_started
-    ports:
-      - "5432:5432"
     environment:
       - POSTGRES_USERNAME=postgres
       - POSTGRES_PASSWORD=password
@@ -45,14 +43,12 @@ services:
   kafka: # Thank you, Mitch
     image: confluentinc/confluent-local:latest
     container_name: tsg3_kafka
-    ports:
-      - "9092:9092"
     environment:
       KAFKA_PROCESS_ROLES: "broker,controller"        # Run both the broker and controller in the same node
       KAFKA_NODE_ID: 1                                 # Unique node ID for this broker/controller
       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"  # Define the KRaft quorum (single-node for dev)
       KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093" # Expose broker + controller listeners
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092" # How clients on the host reach Kafka
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092" # How clients on the host reach Kafka
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
       KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
