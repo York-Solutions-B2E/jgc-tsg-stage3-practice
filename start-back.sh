@@ -41,10 +41,18 @@ tsgdbdir="$scriptdir/db"
 
 #export GOOGLE_CLIENT_SECRET=$(cat "$tsgclientsecretpath")
 
+logpath=$(pwd)
+
 # Go into the database directory
 cd $tsgdbdir
 # Start the database
-if [ -f log.log ]; then
-    rm log.log
+if [ -z $1 ]; then
+    echo "Running without log file"
+    docker compose up
+else
+    logfile="$logpath/$1"
+    if [ -f $logfile ]; then
+        rm $logfile
+    fi
+    docker compose up > >(tee -a $logfile) 2>&1
 fi
-docker compose up > >(tee -a log.log) 2>&1
